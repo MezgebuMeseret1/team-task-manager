@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Force light mode */
+html, body {
+  background-color: #e5e7eb; /* gray-200 */
+  color: black;
+}
