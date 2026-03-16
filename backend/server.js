@@ -40,14 +40,13 @@ app.use(helmet());
 ========================= */
 const allowedOrigins = [
   "http://localhost:5173", // local dev frontend
-  process.env.FRONTEND_URL, // deployed frontend on Vercel
+  process.env.FRONTEND_URL, // deployed Vercel frontend
 ];
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      // allow requests with no origin (e.g., curl, mobile apps)
-      if (!origin) return callback(null, true);
+      if (!origin) return callback(null, true); // allow non-browser requests
       if (allowedOrigins.includes(origin)) return callback(null, true);
       return callback(new Error("Not allowed by CORS"));
     },
@@ -115,7 +114,6 @@ export const io = new SocketIO(server, {
     credentials: true,
   },
 });
-
 // Socket.IO connection
 io.on("connection", (socket) => {
   console.log("New client connected:", socket.id);
