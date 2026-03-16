@@ -19,8 +19,6 @@ import invoiceRoutes from "./routes/invoiceRoutes.js";
 import auditRoutes from "./routes/auditRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 
-
-
 /* Middleware */
 import { errorHandler, notFound } from "./middleware/errorMiddleware.js";
 
@@ -36,9 +34,23 @@ const app = express();
 ========================= */
 app.use(helmet());
 
+/* =========================
+   CORS CONFIG
+   Allow local dev + production frontend
+========================= */
+const allowedOrigins = [
+  "http://localhost:5173", // local dev frontend
+  process.env.FRONTEND_URL, // deployed frontend on Vercel
+];
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: (origin, callback) => {
+      // allow requests with no origin (e.g., curl, mobile apps)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -62,7 +74,7 @@ if (process.env.NODE_ENV === "development") {
    RATE LIMITING
 ========================= */
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
+  windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100,
   message: "Too many requests from this IP, please try again later",
 });
@@ -80,7 +92,7 @@ app.use("/api/v1/invoices", invoiceRoutes);
 app.use("/api/v1/audit", auditRoutes);
 app.use("/api/v1/dashboard", dashboardRoutes);
 app.use("/api/v1/notifications", notificationRoutes);
-app.use("/api/v1/audit", auditRoutes);
+
 /* =========================
    404 HANDLER
 ========================= */
@@ -98,7 +110,7 @@ const PORT = process.env.PORT || 5000;
 const server = http.createServer(app);
 export const io = new SocketIO(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
     credentials: true,
   },
@@ -108,9 +120,8 @@ export const io = new SocketIO(server, {
 io.on("connection", (socket) => {
   console.log("New client connected:", socket.id);
 
-  // Optional: handle client join rooms for specific userId
   socket.on("join", (userId) => {
-    socket.join(userId); // rooms by userId
+    socket.join(userId);
   });
 
   socket.on("disconnect", () => {
@@ -120,8 +131,6 @@ io.on("connection", (socket) => {
 
 server.listen(PORT, () => {
   console.log(
-    `Server running in ${
-      process.env.NODE_ENV || "development"
-    } mode on port ${PORT}`
+    `Server running in ${process.env.NODE_ENV || "development"} mode on port ${PORT}`
   );
 });
