@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Create Axios instance
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1",
+  baseURL: import.meta.env.VITE_API_URL || "https://team-task-manager-api-5p2f.onrender.com/api/v1",
   headers: {
     "Content-Type": "application/json",
   },
