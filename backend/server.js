@@ -43,32 +43,16 @@ const allowedOrigins = [
   "https://team-task-manager-48r1ejf2s-mezgebus-projects.vercel.app",
 ];
 
-// Only push env if it exists
 if (process.env.FRONTEND_URL) {
   allowedOrigins.push(process.env.FRONTEND_URL);
 }
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin (Postman, mobile apps)
-      if (!origin) return callback(null, true);
-
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-
-      console.warn("Blocked by CORS:", origin);
-
-      // ❗ DO NOT throw error → just reject silently
-      return callback(null, false);
-    },
+    origin: allowedOrigins,
     credentials: true,
   })
 );
-
-// ✅ Handle preflight requests
-app.options("*", cors());
 /* =========================
    BODY PARSER
 ========================= */
