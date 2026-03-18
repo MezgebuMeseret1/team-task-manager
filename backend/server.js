@@ -40,6 +40,7 @@ app.use(helmet());
 ========================= */
 const allowedOrigins = [
   "http://localhost:5173", // local dev frontend
+  "https://team-task-manager-48r1ejf2s-mezgebus-projects.vercel.app",
   process.env.FRONTEND_URL, // deployed Vercel frontend
 ];
 
