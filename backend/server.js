@@ -41,6 +41,7 @@ app.use(helmet());
 const allowedOrigins = [
   "http://localhost:5173",
   "https://team-task-manager-48r1ejf2s-mezgebus-projects.vercel.app",
+  "https://team-task-manager-indol-three.vercel.app",
 ];
 
 if (process.env.FRONTEND_URL) {
@@ -49,7 +50,18 @@ if (process.env.FRONTEND_URL) {
 
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+
+      if (
+        origin.includes("vercel.app") ||
+        origin === "http://localhost:5173"
+      ) {
+        return callback(null, true);
+      }
+
+      return callback(null, false);
+    },
     credentials: true,
   })
 );
