@@ -39,24 +39,36 @@ app.use(helmet());
    Allow local dev + production frontend
 ========================= */
 const allowedOrigins = [
-  "http://localhost:5173", // local dev frontend
+  "http://localhost:5173",
   "https://team-task-manager-48r1ejf2s-mezgebus-projects.vercel.app",
-  process.env.FRONTEND_URL, // deployed Vercel frontend
 ];
+
+// Only push env if it exists
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
 
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true); // allow non-browser requests
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-      return callback(new Error("Not allowed by CORS"));
+    origin: function (origin, callback) {
+      // Allow requests with no origin (Postman, mobile apps)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      console.warn("Blocked by CORS:", origin);
+
+      // ❗ DO NOT throw error → just reject silently
+      return callback(null, false);
     },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
+// ✅ Handle preflight requests
+app.options("*", cors());
 /* =========================
    BODY PARSER
 ========================= */
